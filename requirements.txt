@@ -1,0 +1,12 @@
+fastapi
+sqlalchemy
+psycopg2
+pydantic
+python-dotenv 
+uvicorn
+python-jose
+PyMySQL
+passlib
+jwt
+cryptography
+bcrypt
