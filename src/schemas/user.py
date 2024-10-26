@@ -17,7 +17,7 @@ class UserResponse(BaseModel):
     is_active: bool
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
     def to_dict(self):
         return self.dict()
