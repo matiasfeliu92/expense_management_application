@@ -14,6 +14,7 @@ class OperationRoutes:
         self.router.add_api_route("/{id}", self.get_operation, response_model=OperationResponse, methods=["GET"])
         self.router.add_api_route("/new", self.create_operation, response_model=OperationResponse, methods=["POST"])
 
+    @staticmethod
     def get_operations(self, request: Request, db: Session = Depends(get_db)):
         user= request.state.user
         if not user:
@@ -22,6 +23,7 @@ class OperationRoutes:
         operations = operation_services.get_by_user(user.id)
         return operations
     
+    @staticmethod
     def get_operation(self, id: int, request: Request, db: Session = Depends(get_db)):
         user= request.state.user
         if not user:
@@ -30,8 +32,9 @@ class OperationRoutes:
         operation = operation_services.get_by_user_and_id(user.id, id)
         return operation
     
+    @staticmethod
     def create_operation(operation: CreateOperation, request: Request, db: Session = Depends(get_db)):
-        print({'operation_from_form': operation})
+        print({'operation_from_form_in_routes': operation.to_dict})
         user= request.state.user
         if not user:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not authorized")
