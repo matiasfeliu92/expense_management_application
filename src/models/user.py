@@ -11,3 +11,12 @@ class User(Base):
     balance = Column(Integer)
     operations = relationship("Operation", back_populates="owner")
     is_active = Column(Boolean, default=True)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "email": self.email,
+            "balance": self.balance,
+            "operations": [op.to_dict() for op in self.operations]  # Serialize operations
+        }
