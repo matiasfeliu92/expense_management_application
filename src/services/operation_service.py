@@ -4,7 +4,7 @@ from fastapi import HTTPException, status
 from fastapi.responses import JSONResponse
 
 from ..core import Security
-from ..models import User, Operation
+from ..models import Operation, OperationType
 from ..schemas import CreateOperation
 
 class OperationService():
@@ -26,12 +26,20 @@ class OperationService():
         return JSONResponse(content=operation_dict, status_code=status.HTTP_200_OK)
     
     def create_new(self, user_id: int,  operation: CreateOperation):
-        print({'operation_from_form': operation.concept})
+        print({'operation_from_form_in_service': operation.to_dict})
+        if operation.type.lower() == 'egreso':
+            operation.type = OperationType.expense
+        elif operation.type.lower() == 'ingreso':
+            operation.type = OperationType.income
+        else:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Not valid operation type, you must enter {[member.value for member in OperationType]} or {[member.value.lower() for member in OperationType]}")
         new_operation = Operation(concept=operation.concept, amount=operation.amount, type=operation.type, user_id=operation.user_id)
         print({'new_operation': new_operation})
         self.db.add(new_operation)
         self.db.commit()
         self.db.refresh(new_operation)
         new_operation_dict = new_operation.__dict__.copy()
+        print({'new_operation_dict': new_operation_dict})
         new_operation_dict.pop('_sa_instance_state', None)
+        new_operation_dict['date'] = '{:%Y-%m-%d %H:%M}'.format(new_operation_dict['date'])
         return JSONResponse(content=new_operation_dict, status_code=status.HTTP_201_CREATED)
