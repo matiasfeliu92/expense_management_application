@@ -18,3 +18,13 @@ class Operation(Base):
     date = Column(DateTime, default=datetime.datetime.utcnow)
     user_id = Column(Integer, ForeignKey('users.id'))
     owner = relationship("User", back_populates="operations")
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "concept": self.concept,
+            "amount": self.amount,
+            "type": self.type,
+            "date": self.date.isoformat(),  # Ensure proper date formatting
+            "user_id": self.user_id
+        }
