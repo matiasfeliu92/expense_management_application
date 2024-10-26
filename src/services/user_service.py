@@ -1,22 +1,30 @@
-from sqlalchemy.orm import Session
+import json
+from sqlalchemy.orm import Session, joinedload
 from fastapi import HTTPException, status
 from fastapi.responses import JSONResponse
 
 from ..core import Security
-from ..models import User
-from ..schemas import UserCreate, UserLogin
+from ..models import User, Operation
+from ..schemas import UserCreate, UserLogin, UserResponse
 
 class User_Service():
     def __init__(self, db: Session):
         self.db = db
         self.security= Security()
 
-    def get_all(self):
-        users = self.db.query(User).all()
-        users_dict = [user.__dict__ for user in users]
-        print({'users': users})
+    def get_all(self) -> UserResponse:
+        # users = self.db.query(User).all()
+        # users = self.db.query(User).join(Operation).all()
+        users = self.db.query(User).options(joinedload(User.operations)).all()
+        users_dict = [user.to_dict() for user in users]
+        print({'users_list': users_dict})
         for user in users_dict:
+            print("-----------------------USER IN USERS_DICT-----------------------------")
+            print(user)
+            print([operation for operation in user['operations']])
             user.pop('_sa_instance_state', None)
+            user['operations'] = [operation for operation in user['operations']]
+        print({'users_dict': users_dict})
         return JSONResponse(content=users_dict, status_code=status.HTTP_200_OK)
     
     def get_by_id(self, id: int):
