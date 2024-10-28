@@ -19,6 +19,7 @@ class CreateOperation(BaseModel):
     amount: float
     type: str
     user_id: int
+    category: str
 
     def to_dict(self):
         return self.dict()
