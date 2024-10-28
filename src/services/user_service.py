@@ -13,26 +13,19 @@ class User_Service():
         self.security= Security()
 
     def get_all(self) -> UserResponse:
-        # users = self.db.query(User).all()
-        # users = self.db.query(User).join(Operation).all()
         users = self.db.query(User).options(joinedload(User.operations)).all()
         users_dict = [user.to_dict() for user in users]
         print({'users_list': users_dict})
-        for user in users_dict:
-            print("-----------------------USER IN USERS_DICT-----------------------------")
-            print(user)
-            print([operation for operation in user['operations']])
-            user.pop('_sa_instance_state', None)
-            user['operations'] = [operation for operation in user['operations']]
         print({'users_dict': users_dict})
         return JSONResponse(content=users_dict, status_code=status.HTTP_200_OK)
     
     def get_by_id(self, id: int):
-        user = self.db.query(User).filter(User.id == id).first()
+        user = self.db.query(User).options(joinedload(User.operations)).filter(User.id == id).first()
         if not user:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-        user_dict = user.__dict__.copy()
+        user_dict = user.to_dict()
         user_dict.pop('_sa_instance_state', None)
+        print({'user_list': user_dict})
         return JSONResponse(content=user_dict, status_code=status.HTTP_200_OK)
     
     def create_new(self, user: UserCreate):
@@ -48,7 +41,7 @@ class User_Service():
         self.db.add(new_user)
         self.db.commit()
         self.db.refresh(new_user)
-        new_user_dict = new_user.__dict__.copy()
+        new_user_dict = new_user.to_dict()
         new_user_dict.pop('_sa_instance_state', None)
         return JSONResponse(content=new_user_dict, status_code=status.HTTP_201_CREATED)
 
@@ -59,7 +52,7 @@ class User_Service():
         verify_password = self.security.verify_passwords(user.password, user_.password)
         if not verify_password:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid credentials")
-        print("-------------USER FOUND----------------------")
+        print("-----------------USER FOUND----------------------")
         print(user_)
         token = self.security.create_access_token(user.to_dict())
         print(token)
