@@ -18,5 +18,5 @@ class User(Base):
             "name": self.name,
             "email": self.email,
             "balance": self.balance,
-            "operations": [op.to_dict() for op in self.operations]  # Serialize operations
+            "operations": [operation.to_dict() for operation in self.operations] if hasattr(self.operations, '__iter__') else self.operations.to_dict()
         }

@@ -1,13 +1,9 @@
 from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey, Enum as SQLEnum
 from sqlalchemy.orm import relationship
 import datetime
-from enum import Enum as PyEnum
 
 from src.db.config import Base
-
-class OperationType(str,PyEnum):
-    expense = 'Expense'
-    income = "Income"
+from ..enums import OperationType
 
 class Operation(Base):
     __tablename__ = 'operations'
@@ -18,6 +14,8 @@ class Operation(Base):
     date = Column(DateTime, default=datetime.datetime.utcnow)
     user_id = Column(Integer, ForeignKey('users.id'))
     owner = relationship("User", back_populates="operations")
+    categories = relationship("Category", back_populates="operation")
+    category_id = Column(Integer, ForeignKey('categories.id'))
 
     def to_dict(self):
         return {
@@ -25,6 +23,8 @@ class Operation(Base):
             "concept": self.concept,
             "amount": self.amount,
             "type": self.type,
-            "date": self.date.isoformat(),  # Ensure proper date formatting
-            "user_id": self.user_id
+            "date": self.date.isoformat(),
+            "user_id": self.user_id,
+            "category_id": self.category_id,
+            "categories": [category.to_dict() for category in self.categories] if hasattr(self.categories, '__iter__') else self.categories.to_dict()
         }
