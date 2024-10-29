@@ -1,6 +1,6 @@
 fastapi
 sqlalchemy
-psycopg2
+psycopg2-binary
 pydantic
 python-dotenv 
 uvicorn
@@ -10,3 +10,5 @@ passlib
 jwt
 cryptography
 bcrypt
+alembic
+pymysql

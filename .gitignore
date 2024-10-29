@@ -1,4 +1,5 @@
 myenv
 .env
 mysql_data
+mysql_data_new
 *__pycache__
