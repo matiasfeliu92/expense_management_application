@@ -22,7 +22,7 @@ class Operation(Base):
             "id": self.id,
             "concept": self.concept,
             "amount": self.amount,
-            "type": self.type,
+            "type": self.type.value,
             "date": self.date.isoformat(),
             "user_id": self.user_id,
             "category_id": self.category_id,
