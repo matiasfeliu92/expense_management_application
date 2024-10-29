@@ -36,10 +36,12 @@ class LoadUserData(BaseHTTPMiddleware):
                     print("------------------OPERATIONS--------------")
                     print(operations)
 
-                    request.state.user = user
-                    request.state.operations = operations
+                    request.state.user = user.to_dict()
+                    request.state.operations = [operation.to_dict() for operation in operations]
             except JWTError:
                 raise HTTPException(status_code=401, detail="Invalid token")
+        print("---------------------------------REQUEST.STATE------------------------------------")
+        print(request.state.__dict__)
         response = await call_next(request)
         print("------------------RESPONSE--------------")
         print(response.status_code)
