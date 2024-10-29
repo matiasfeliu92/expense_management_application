@@ -36,9 +36,11 @@ class OperationRoutes:
     def create_operation(operation: CreateOperation, request: Request, db: Session = Depends(get_db)):
         print({'operation_from_form_in_routes': operation.to_dict})
         user= request.state.user
+        print("--------------------REQUEST.STATE.USER-----------------")
+        print(user)
         if not user:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not authorized")
         operation_services = OperationService(db)
-        new_operation = operation_services.create_new(user.id, operation)
+        new_operation = operation_services.create_new(user['id'], operation)
         print(f"New operation with concept '{operation.concept}' was created successfully")
         return new_operation
