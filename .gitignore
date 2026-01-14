@@ -1,5 +1,7 @@
-myenv
+expenses
 .env
 mysql_data
 mysql_data_new
 *__pycache__
+.pytest_cache
+.vscode

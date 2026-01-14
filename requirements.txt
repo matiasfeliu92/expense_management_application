@@ -12,3 +12,6 @@ cryptography
 bcrypt
 alembic
 pymysql
+pytest
+httpx
+# class-validator
