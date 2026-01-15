@@ -1,4 +1,4 @@
-from src_v2.infrastructure.schemas.user import UserCreate, UserResponse
+from src_v2.user.infrastructure.schemas.user import UserCreate, UserResponse
 
 def test_usercreate_structure():
     # Ahora validamos que el Schema acepte y mantenga tipos primitivos

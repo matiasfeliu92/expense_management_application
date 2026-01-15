@@ -1,8 +1,8 @@
 from fastapi import FastAPI
 import uvicorn
 
-from src_v2.infrastructure.api.user_routes import router as users_v2_router
-from src_v2.infrastructure.db import config as db_config  # ensure DB initialized
+from src_v2.user.infrastructure.api.user_routes import router as users_v2_router
+from src_v2.user.infrastructure.db import config as db_config  # ensure DB initialized
 
 
 def create_app() -> FastAPI:

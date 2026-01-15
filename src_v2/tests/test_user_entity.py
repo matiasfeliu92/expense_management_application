@@ -1,5 +1,5 @@
-from src_v2.domain.entities.user import User
-from src_v2.domain.value_objects import Name, Email, Password, Balance, Id
+from src_v2.user.domain.entities.user import User
+from src_v2.user.domain.value_objects import Name, Email, Password, Balance, Id
 
 
 def test_user_to_dict():

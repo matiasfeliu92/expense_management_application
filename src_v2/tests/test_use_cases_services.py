@@ -1,11 +1,11 @@
 import pytest
 
-from src_v2.application.use_cases.create_user import CreateUser
-from src_v2.application.use_cases.get_user_by_id import GetUserById
-from src_v2.application.use_cases.get_user_by_email import GetUserByEmail
-from src_v2.domain.exceptions import UserNotFoundError
-from src_v2.domain.entities.user import User as DomainUser
-from src_v2.domain.value_objects import Name, Email, Password, Balance, Id
+from src_v2.user.application.use_cases.create_user import CreateUser
+from src_v2.user.application.use_cases.get_user_by_id import GetUserById
+from src_v2.user.application.use_cases.get_user_by_email import GetUserByEmail
+from src_v2.user.domain.exceptions import UserNotFoundError
+from src_v2.user.domain.entities.user import User as DomainUser
+from src_v2.user.domain.value_objects import Name, Email, Password, Balance, Id
 
 
 class FakeRepo:

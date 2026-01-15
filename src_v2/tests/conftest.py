@@ -3,7 +3,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from src_v2.main import app
-from src_v2.infrastructure.db.config import Base, get_db
+from src_v2.user.infrastructure.db.config import Base, get_db
 
 # 1. Configuración de la base de datos de prueba (en memoria es más rápida)
 # Si prefieres archivo, usa: f"sqlite:///./test.db"

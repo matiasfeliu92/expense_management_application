@@ -1,7 +1,7 @@
 import pytest
 
-from src_v2.domain.value_objects import Name, Email, Password, Balance, Id
-from src_v2.domain.exceptions import NegativeBalanceError, BalanceZeroError
+from src_v2.user.domain.value_objects import Name, Email, Password, Balance, Id
+from src_v2.user.domain.exceptions import NegativeBalanceError, BalanceZeroError
 
 
 def test_name_valid():

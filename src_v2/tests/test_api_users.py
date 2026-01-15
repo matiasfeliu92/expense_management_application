@@ -1,5 +1,5 @@
-from src_v2.domain.value_objects import Balance, Email, Name, Password
-from src_v2.infrastructure.schemas.user import UserCreate
+from src_v2.user.domain.value_objects import Balance, Email, Name, Password
+from src_v2.user.infrastructure.schemas.user import UserCreate
 
 
 def test_create_and_get_user(client):
