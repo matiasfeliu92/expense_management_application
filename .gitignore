@@ -2,4 +2,6 @@ myenv
 .env
 mysql_data
 mysql_data_new
+*.db
 *__pycache__
+*.ipynb
