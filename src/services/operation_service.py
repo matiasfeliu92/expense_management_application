@@ -14,7 +14,7 @@ class OperationService():
 
     def get_by_user(self, user_id: int):
         operations = self.db.query(Operation).filter(Operation.user_id == user_id).all()
-        operations_dict = [operation.to_dict for operation in operations]
+        operations_dict = [operation.to_dict() for operation in operations]
         for operation in operations_dict:
             operation.pop('_sa_instance_state', None)
         return JSONResponse(content=operations_dict, status_code=status.HTTP_200_OK)
@@ -22,7 +22,6 @@ class OperationService():
     def get_by_user_and_id(self, user_id: int, id: int):
         operation = self.db.query(Operation).filter(and_(Operation.user_id == user_id, Operation.id == id)).first()
         operation_dict = operation.to_dict()
-        operation.pop('_sa_instance_state', None)
         return JSONResponse(content=operation_dict, status_code=status.HTTP_200_OK)
     
     def create_new(self, user_id: int, operation: CreateOperation):
