@@ -6,22 +6,20 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# db_url = os.getenv('DB_URL')
+db_url = os.getenv('DB_URL')
+if not db_url:
+    db_user = os.getenv('DB_USER')
+    db_password = os.getenv('DB_PASSWORD')
+    db_host = os.getenv('DB_HOST')
+    db_port = os.getenv('DB_PORT')
+    db_name = os.getenv('DB_NAME')
+    db_url = f"mysql+pymysql://{db_user}:{db_password}@{db_host}:{int(db_port)}/{db_name}"
 
-db_user = os.getenv('DB_USER')
-print({'DB_USER': db_user})
-db_password = os.getenv('DB_PASSWORD')
-print({'DB_PASSWORD': db_password})
-db_host = os.getenv('DB_HOST')
-print({'DB_HOST': db_host})
-db_port = os.getenv('DB_PORT')
-print({'DB_PORT': db_port})
-db_name = os.getenv('DB_NAME')
-print({'DB_NAME': db_name})
+connect_args = {}
+if db_url.startswith("sqlite"):
+    connect_args = {"check_same_thread": False}
 
-db_url = f"mysql+pymysql://{db_user}:{db_password}@{db_host}:{int(db_port)}/{db_name}"
-print({'DB_URL': db_url})
-engine = create_engine(db_url)
+engine = create_engine(db_url, connect_args=connect_args)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
