@@ -9,3 +9,5 @@ PyMySQL
 pwdlib[argon2]
 cryptography
 alembic
+httpx
+pytest
