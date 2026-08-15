@@ -40,5 +40,4 @@ class UserRoutes:
         user_service = User_Service(db)
         token = user_service.login(user)
         print(f"User {user.email} was found")
-        print(token)
-        return JSONResponse(content={"access_token": token}, status_code=status.HTTP_200_OK)
+        return JSONResponse(content={"access_token": token, "token_type": "bearer"}, status_code=status.HTTP_200_OK)

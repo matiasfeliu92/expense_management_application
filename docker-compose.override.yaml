@@ -1,0 +1,6 @@
+services:
+  fastapi:
+    volumes:
+      - ./:/app
+    environment:
+      APP_RELOAD: "true"

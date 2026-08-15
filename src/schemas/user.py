@@ -28,3 +28,7 @@ class UserLogin(BaseModel):
 
     def to_dict(self):
         return self.dict()
+
+class TokenResponse(BaseModel):
+    access_token: str
+    token_type: str

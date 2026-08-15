@@ -54,6 +54,5 @@ class User_Service():
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid credentials")
         print("-----------------USER FOUND----------------------")
         print(user_)
-        token = self.security.create_access_token(user.to_dict())
-        print(token)
+        token = self.security.create_access_token({"sub": str(user_.id)})
         return token

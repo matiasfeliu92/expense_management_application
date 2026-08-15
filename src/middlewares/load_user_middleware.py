@@ -1,45 +1,56 @@
-from fastapi import Request, HTTPException
-from starlette.middleware.base import BaseHTTPMiddleware
+import jwt
+from fastapi import Request
+from fastapi.responses import JSONResponse
+from jwt import InvalidTokenError
 from sqlalchemy.orm import Session
-from jose import JWTError, jwt
+from starlette.middleware.base import BaseHTTPMiddleware
 
-from ..models import User, Operation
+from ..core.security import ALGORITHM, SECRET_KEY
 from ..db.config import SessionLocal
+from ..models import Operation, User
 
 class LoadUserData(BaseHTTPMiddleware):
     def __init__(self, app):
         super().__init__(app)
-        # self.db_session = Session
-        self.SECRET_KEY = "mysecretkey"
-        self.ALGORITHM = "HS256"
-    
+        self.SECRET_KEY = SECRET_KEY
+        self.ALGORITHM = ALGORITHM
+
     async def dispatch(self, request: Request, call_next):
+        request.state.user = None
+        request.state.operations = []
+
         auth_header = request.headers.get("Authorization")
         print("------------------AUTH HEADER--------------")
         print(auth_header)
         if auth_header:
-            token = auth_header.split(" ")[1]
+            parts = auth_header.split(" ")
+            if len(parts) != 2 or parts[0] != "Bearer":
+                return JSONResponse(content={"detail": "Invalid token"}, status_code=401)
+            token = parts[1]
             try:
                 payload = jwt.decode(token, self.SECRET_KEY, algorithms=[self.ALGORITHM])
                 print("------------------PAYLOAD--------------")
                 print(payload)
-                user_email = payload.get("email")
-                print("------------------USER EMAIL--------------")
-                print(user_email)
-                if user_email:
+                user_id = payload.get("sub")
+                print("------------------USER ID--------------")
+                print(user_id)
+                if user_id:
                     db: Session = SessionLocal()
-                    user = db.query(User).filter(User.email == user_email).first()
-                    if not user:
-                        raise HTTPException(status_code=404, detail="User not found")
+                    try:
+                        user = db.query(User).filter(User.id == int(user_id)).first()
+                        if not user:
+                            return JSONResponse(content={"detail": "User not found"}, status_code=401)
 
-                    operations = db.query(Operation).filter(Operation.user_id == user.id).all()
-                    print("------------------OPERATIONS--------------")
-                    print(operations)
+                        operations = db.query(Operation).filter(Operation.user_id == user.id).all()
+                        print("------------------OPERATIONS--------------")
+                        print(operations)
 
-                    request.state.user = user.to_dict()
-                    request.state.operations = [operation.to_dict() for operation in operations]
-            except JWTError:
-                raise HTTPException(status_code=401, detail="Invalid token")
+                        request.state.user = user.to_dict()
+                        request.state.operations = [operation.to_dict() for operation in operations]
+                    finally:
+                        db.close()
+            except InvalidTokenError:
+                return JSONResponse(content={"detail": "Invalid token"}, status_code=401)
         print("---------------------------------REQUEST.STATE------------------------------------")
         print(request.state.__dict__)
         response = await call_next(request)

@@ -15,21 +15,21 @@ class OperationRoutes:
         self.router.add_api_route("/new", self.create_operation, response_model=OperationResponse, methods=["POST"])
 
     @staticmethod
-    def get_operations(self, request: Request, db: Session = Depends(get_db)):
-        user= request.state.user
+    def get_operations(request: Request, db: Session = Depends(get_db)):
+        user = request.state.user
         if not user:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not authorized")
         operation_services = OperationService(db)
-        operations = operation_services.get_by_user(user.id)
+        operations = operation_services.get_by_user(user['id'])
         return operations
     
     @staticmethod
-    def get_operation(self, id: int, request: Request, db: Session = Depends(get_db)):
-        user= request.state.user
+    def get_operation(id: int, request: Request, db: Session = Depends(get_db)):
+        user = request.state.user
         if not user:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not authorized")
         operation_services = OperationService(db)
-        operation = operation_services.get_by_user_and_id(user.id, id)
+        operation = operation_services.get_by_user_and_id(user['id'], id)
         return operation
     
     @staticmethod
