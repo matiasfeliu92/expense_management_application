@@ -7,7 +7,6 @@ USER_PAYLOAD = {
     "name": "matute92",
     "email": "matumazparrote@gmail.com",
     "password": "francia",
-    "balance": 100,
 }
 
 
@@ -25,16 +24,16 @@ def test_register_creates_user(client):
     user = response.json()
     assert user["name"] == USER_PAYLOAD["name"]
     assert user["email"] == USER_PAYLOAD["email"]
-    assert user["balance"] == USER_PAYLOAD["balance"]
+    assert user["accounts"] == []
     assert user["id"] > 0
     assert "password" not in user
 
 
 def test_register_missing_fields_returns_422(client):
     invalid_payloads = [
-        {"email": "a@b.com", "password": "secret", "balance": 10},
-        {"name": "noemail", "password": "secret", "balance": 10},
-        {"name": "nopass", "email": "a@b.com", "balance": 10},
+        {"email": "a@b.com", "password": "secret"},
+        {"name": "noemail", "password": "secret"},
+        {"name": "nopass", "email": "a@b.com"},
     ]
     for payload in invalid_payloads:
         response = client.post("/users/new", json=payload)
@@ -43,9 +42,9 @@ def test_register_missing_fields_returns_422(client):
 
 def test_register_empty_fields_returns_400(client):
     invalid_payloads = [
-        {"name": "", "email": "a@b.com", "password": "secret", "balance": 10},
-        {"name": "noemail", "email": "", "password": "secret", "balance": 10},
-        {"name": "nopass", "email": "a@b.com", "password": "", "balance": 10},
+        {"name": "", "email": "a@b.com", "password": "secret"},
+        {"name": "noemail", "email": "", "password": "secret"},
+        {"name": "nopass", "email": "a@b.com", "password": ""},
     ]
     for payload in invalid_payloads:
         response = client.post("/users/new", json=payload)
