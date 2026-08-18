@@ -7,7 +7,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 
 from ..core.security import ALGORITHM, SECRET_KEY
 from ..db.config import SessionLocal
-from ..models import Operation, User
+from ..models import Account, Operation, User
 
 class LoadUserData(BaseHTTPMiddleware):
     def __init__(self, app):
@@ -16,6 +16,10 @@ class LoadUserData(BaseHTTPMiddleware):
         self.ALGORITHM = ALGORITHM
 
     async def dispatch(self, request: Request, call_next):
+        """Decode the Bearer JWT (if any) and populate `request.state.user`
+        (as a dict) and `request.state.operations` for downstream routes/services.
+        Operations are resolved via a join through `Account`, since `Operation`
+        has no direct `user_id` column."""
         request.state.user = None
         request.state.operations = []
 
@@ -41,7 +45,7 @@ class LoadUserData(BaseHTTPMiddleware):
                         if not user:
                             return JSONResponse(content={"detail": "User not found"}, status_code=401)
 
-                        operations = db.query(Operation).filter(Operation.user_id == user.id).all()
+                        operations = db.query(Operation).join(Account).filter(Account.user_id == user.id).all()
                         print("------------------OPERATIONS--------------")
                         print(operations)
 
