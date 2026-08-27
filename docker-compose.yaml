@@ -7,6 +7,9 @@ services:
     environment:
       - DB_URL=sqlite:////app/data/expense_app.db
       - SECRET_KEY=${SECRET_KEY:-dev-secret-key-change-me-in-production-0123456789abcdef}
+      - API_URL=${API_URL:-}
+      - API_KEY=${API_KEY:-}
+      - AI_MODEL=${AI_MODEL:-deepseek-v4-flash-free}
     ports:
       - "8000:8000"
     volumes:
