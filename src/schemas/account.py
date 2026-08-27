@@ -2,7 +2,7 @@
 
 from pydantic import BaseModel, field_validator
 
-from ..core.currencies import SUPPORTED_CURRENCIES
+from ..core.currencies import validate_supported_currency
 
 class AccountCreate(BaseModel):
     """Account creation payload. Balance always starts at 0 — it is never client-supplied."""
@@ -14,10 +14,7 @@ class AccountCreate(BaseModel):
     @classmethod
     def currency_must_be_supported(cls, value: str) -> str:
         """Normalize to uppercase and reject any currency outside `SUPPORTED_CURRENCIES`."""
-        value = value.strip().upper()
-        if value not in SUPPORTED_CURRENCIES:
-            raise ValueError(f"Unsupported currency, must be one of {sorted(SUPPORTED_CURRENCIES)}")
-        return value
+        return validate_supported_currency(value)
 
     def to_dict(self):
         return self.dict()
