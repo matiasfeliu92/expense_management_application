@@ -6,11 +6,14 @@ from src.db.config import Base, engine, SessionLocal
 from src.models import Category
 
 DEFAULT_CATEGORIES = [
-    ("salary", "This category covers the collection of salaries for jobs"),
-    ("service payment", "This category covers the payment of utility bills such as electricity, gas, telephone, internet, water, etc."),
-    ("shopping", "This category covers purchases made, whether food, clothing, appliances, household items, furniture, etc."),
-    ("rent", "This category covers the payment of rent for housing, whether apartments or houses."),
-    ("expense", "This category covers the payment of real estate expenses in the buildings/houses where one lives."),
+    ("supermercado", "Compras de alimentos y artículos de primera necesidad"),
+    ("transferencias", "Envíos o recepciones de dinero entre cuentas o personas"),
+    ("servicios/suscripciones", "Pagos de servicios (luz, gas, internet, teléfono) y suscripciones"),
+    ("sueldo", "Cobro de salarios"),
+    ("expensas", "Expensas del edificio/consorcio donde se vive"),
+    ("alquiler", "Pago de alquiler de vivienda"),
+    ("viajes", "Transporte, hospedaje y gastos de viajes"),
+    ("otros", "Gastos varios que no encajan en ninguna otra categoría"),
 ]
 
 
