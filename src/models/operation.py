@@ -9,8 +9,12 @@ from ..enums import OperationType
 
 class Operation(Base):
     """A single ledger entry against an `Account`. `amount` is always positive; the
-    sign applied to the account balance is derived from `type`, not from `amount`.
-    `currency` is a snapshot of the account's currency at creation time."""
+    sign applied to the account balance is derived from `type` (`income` credits the
+    account, `expense`/`transfer` debit it), not from `amount`. `currency` is a
+    snapshot of the account's currency at creation time. `name` holds the merchant
+    (purchase), service (payment/subscription), or person (transfer) associated with
+    the operation, depending on `category`/`type`; it defaults to "Other" for
+    `transfer` operations when not supplied (see `OperationService.create_new`)."""
 
     __tablename__ = 'operations'
     id = Column(Integer, primary_key=True, index=True)
@@ -24,6 +28,7 @@ class Operation(Base):
                          nullable=False, index=True)
     category_id = Column(Integer, ForeignKey('categories.id', ondelete='RESTRICT', onupdate='CASCADE'),
                           nullable=False, index=True)
+    name = Column(String(250), nullable=True)
 
     created_at = Column(DateTime, nullable=False, server_default=func.now())
     updated_at = Column(DateTime, nullable=False, server_default=func.now(), onupdate=func.now())
@@ -46,4 +51,5 @@ class Operation(Base):
             "account_id": self.account_id,
             "category_id": self.category_id,
             "category": self.category.to_dict() if self.category else None,
+            "name": self.name,
         }
