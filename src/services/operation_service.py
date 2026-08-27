@@ -18,6 +18,8 @@ TYPE_ALIASES = {
     'ingreso': OperationType.income,
     'expense': OperationType.expense,
     'income': OperationType.income,
+    'transferencia': OperationType.transfer,
+    'transfer': OperationType.transfer,
 }
 
 class OperationService():
@@ -37,6 +39,24 @@ class OperationService():
                 detail=f"Not valid operation type, you must enter one of {sorted(TYPE_ALIASES.keys())}",
             )
         return op_type
+
+    def get_owned_account(self, user_id: int, account_id: int, lock: bool = False) -> Account:
+        """Fetch an account enforcing ownership: 404 when missing, 403 when it belongs
+        to another user. Pass `lock=True` right before mutating the balance so the
+        row stays consistent under concurrent writes (`with_for_update`; a no-op on
+        SQLite). Callers must NOT hold the lock across slow work (e.g. AI calls)."""
+        query = self.db.query(Account).filter(Account.id == account_id)
+        if lock:
+            query = query.with_for_update()
+        account = query.first()
+        if not account:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Account not found")
+        if account.user_id != user_id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Account does not belong to the authenticated user",
+            )
+        return account
 
     def get_by_user(self, user_id: int):
         """List every operation across all of the user's accounts."""
@@ -60,7 +80,11 @@ class OperationService():
         update to avoid lost updates under concurrent writes — this only provides
         real row locking on MySQL; SQLite (used in tests/dev) ignores it. Rejects
         the operation with 403 if the account doesn't belong to the caller, and
-        with 400 if applying it would take the balance negative.
+        with 400 if applying it would take the balance negative. `transfer`
+        operations debit the account like `expense`. If `name` is omitted on a
+        `transfer` operation it defaults to "Other". When the payload carries a
+        `currency`, it must match the account's currency (400 otherwise); when
+        omitted, the account's currency is snapshotted onto the operation.
         """
         category = self.db.query(Category).filter(
             Category.id == operation.category_id, Category.is_active == True
@@ -74,15 +98,12 @@ class OperationService():
         op_type = self._normalize_type(operation.type)
 
         try:
-            account = self.db.query(Account).filter(
-                Account.id == operation.account_id
-            ).with_for_update().first()
-            if not account:
-                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Account not found")
-            if account.user_id != user_id:
+            account = self.get_owned_account(user_id, operation.account_id, lock=True)
+            if operation.currency and operation.currency.upper() != account.currency.upper():
                 raise HTTPException(
-                    status_code=status.HTTP_403_FORBIDDEN,
-                    detail="Account does not belong to the authenticated user",
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Currency mismatch: the operation is in {operation.currency.upper()} "
+                           f"but the account operates in {account.currency.upper()}",
                 )
 
             amount = Decimal(str(operation.amount))
@@ -91,13 +112,16 @@ class OperationService():
             if new_balance < 0:
                 raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Insufficient balance")
 
+            name = operation.name or ("Other" if op_type == OperationType.transfer else None)
+
             new_operation = Operation(
                 concept=operation.concept,
                 amount=amount,
                 type=op_type,
-                currency=account.currency,
+                currency=(operation.currency or account.currency).upper(),
                 account_id=account.id,
                 category_id=category.id,
+                name=name,
             )
             account.balance = new_balance
             self.db.add(new_operation)
