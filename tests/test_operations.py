@@ -77,12 +77,135 @@ def test_expense_over_balance_returns_400(client, account):
 def test_operation_with_invalid_type_returns_400(client, account):
     response = client.post(
         "/operations/new",
-        json={"concept": "Something", "amount": 10, "type": "transfer", "account_id": account["id"], "category_id": account["category_id"]},
+        json={"concept": "Something", "amount": 10, "type": "bogus_type", "account_id": account["id"], "category_id": account["category_id"]},
         headers=account["headers"],
     )
 
     assert response.status_code == 400
     assert "Not valid operation type" in response.json()["detail"]
+
+
+def test_expense_operation_persists_name(client, account):
+    client.post(
+        "/operations/new",
+        json={"concept": "Salary", "amount": 500, "type": "ingreso", "account_id": account["id"], "category_id": account["category_id"]},
+        headers=account["headers"],
+    )
+
+    response = client.post(
+        "/operations/new",
+        json={
+            "concept": "Groceries",
+            "amount": 50,
+            "type": "egreso",
+            "account_id": account["id"],
+            "category_id": account["category_id"],
+            "name": "Carrefour",
+        },
+        headers=account["headers"],
+    )
+
+    assert response.status_code == 201
+    assert response.json()["name"] == "Carrefour"
+
+
+def test_operation_with_matching_currency_is_accepted(client, account):
+    response = client.post(
+        "/operations/new",
+        json={
+            "concept": "Salary",
+            "amount": 100,
+            "type": "ingreso",
+            "account_id": account["id"],
+            "category_id": account["category_id"],
+            "currency": "usd",
+        },
+        headers=account["headers"],
+    )
+
+    assert response.status_code == 201
+    assert response.json()["currency"] == "USD"
+
+
+def test_operation_with_mismatched_currency_returns_400(client, account):
+    response = client.post(
+        "/operations/new",
+        json={
+            "concept": "Wrong currency",
+            "amount": 100,
+            "type": "ingreso",
+            "account_id": account["id"],
+            "category_id": account["category_id"],
+            "currency": "ARS",
+        },
+        headers=account["headers"],
+    )
+
+    assert response.status_code == 400
+    assert "Currency mismatch" in response.json()["detail"]
+
+
+def test_operation_with_unsupported_currency_returns_422(client, account):
+    response = client.post(
+        "/operations/new",
+        json={
+            "concept": "Weird currency",
+            "amount": 100,
+            "type": "ingreso",
+            "account_id": account["id"],
+            "category_id": account["category_id"],
+            "currency": "EUR",
+        },
+        headers=account["headers"],
+    )
+
+    assert response.status_code == 422
+
+
+def test_transfer_operation_defaults_nombre_to_other_and_debits_balance(client, account):
+    client.post(
+        "/operations/new",
+        json={"concept": "Salary", "amount": 500, "type": "ingreso", "account_id": account["id"], "category_id": account["category_id"]},
+        headers=account["headers"],
+    )
+
+    response = client.post(
+        "/operations/new",
+        json={"concept": "Sent money", "amount": 100, "type": "transfer", "account_id": account["id"], "category_id": account["category_id"]},
+        headers=account["headers"],
+    )
+
+    assert response.status_code == 201
+    operation = response.json()
+    assert operation["type"] == "Transfer"
+    assert operation["name"] == "Other"
+
+    accounts = client.get("/accounts/", headers=account["headers"]).json()
+    assert accounts[0]["balance"] == 400.0
+
+
+def test_transfer_operation_with_name_keeps_given_value(client, account):
+    client.post(
+        "/operations/new",
+        json={"concept": "Salary", "amount": 500, "type": "ingreso", "account_id": account["id"], "category_id": account["category_id"]},
+        headers=account["headers"],
+    )
+
+    response = client.post(
+        "/operations/new",
+        json={
+            "concept": "Sent money",
+            "amount": 100,
+            "type": "transfer",
+            "account_id": account["id"],
+            "category_id": account["category_id"],
+            "name": "Juan Perez",
+        },
+        headers=account["headers"],
+    )
+
+    assert response.status_code == 201
+    assert response.json()["name"] == "Juan Perez"
 
 
 def test_operation_with_inactive_category_returns_400(client, account, category):
